@@ -1,35 +1,40 @@
 package FICHE;
 
-import java.util.GregorianCalendar;
-
-    /**
+/**
  *
- 
-@author Sergio García de Baya*/
+ * @author Sergio García de Baya
+ */
 public class Empleado {
-    private String nomApe;
-    private char sexo;
+    private String nomApes;
+    private Sexo sexo;
     private float salario;
     private Fecha fechaIngreso;
     private TipoEmpleado tipoEmpleado;
     private Provincia provincia;
 
-    public Empleado() {
+    public Empleado(String nomApes, Sexo sexo, float salario, Fecha fechaIngreso,
+                    TipoEmpleado tipoEmpleado, Provincia provincia) {
+        this.nomApes = nomApes;
+        this.sexo = sexo;
+        this.salario = salario;
+        this.fechaIngreso = fechaIngreso;
+        this.tipoEmpleado = tipoEmpleado;
+        this.provincia = provincia;
     }
 
-    public String getNomApe() {
-        return nomApe;
+    public String getNomApes() {
+        return nomApes;
     }
 
-    public void setNomApe(String nomApe) {
-        this.nomApe = nomApe;
+    public void setNomApes(String nomApes) {
+        this.nomApes = nomApes;
     }
 
-    public char getSexo() {
+    public Sexo getSexo() {
         return sexo;
     }
 
-    public void setSexo(char sexo) {
+    public void setSexo(Sexo sexo) {
         this.sexo = sexo;
     }
 
@@ -49,7 +54,6 @@ public class Empleado {
         this.fechaIngreso = fechaIngreso;
     }
 
-
     public TipoEmpleado getTipoEmpleado() {
         return tipoEmpleado;
     }
@@ -65,12 +69,15 @@ public class Empleado {
     public void setProvincia(Provincia provincia) {
         this.provincia = provincia;
     }
-    
-    public byte getTrienios(){
-        
-        return (byte)(fechaIngreso.getAntiguedad()/3);
+
+    public byte getTrienios() {
+        byte trienios;
+
+        trienios = (byte) (fechaIngreso.getAntiguedad() / 3);
+
+        return trienios;
     }
-    
+
     public float getComplemento() {
         float complemento;
 
@@ -93,4 +100,3 @@ public class Empleado {
         return sueldo;
     }
 }
-

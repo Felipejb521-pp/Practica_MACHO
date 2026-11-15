@@ -15,39 +15,43 @@ public enum Provincia {
     MALAGA((byte) 7, "Malaga"),
     SEVILLA((byte) 8, "Sevilla");
 
-    private byte numero;
+    private byte codigo;
     private String descripcion;
 
-    private Provincia(byte numero, String descripcion) {
-        this.numero = numero;
+    private Provincia(byte codigo, String descripcion) {
+        this.codigo = codigo;
         this.descripcion = descripcion;
     }
 
-    public byte getNumero() {
-        return numero;
+    public byte getCodigo() {
+        return codigo;
     }
 
     public String getDescripcion() {
         return descripcion;
     }
 
-    public static Provincia buscador(byte numero) {
+    public static Provincia buscador(byte codigo) {
         Provincia provincia;
+
         provincia = null;
         for (Provincia p : values()) {
-            if (p.numero == numero) {
+            if (p.codigo == codigo) {
                 provincia = p;
             }
         }
+
         return provincia;
     }
 
     public boolean tieneComplementoDestino() {
         boolean verdadero;
+
         verdadero = false;
-        if(this == Provincia.ALMERIA || this ==Provincia.HUELVA || this== Provincia.JAEN){
+        if (this == Provincia.ALMERIA || this == Provincia.HUELVA || this == Provincia.JAEN) {
             verdadero = true;
         }
+
         return verdadero;
     }
 }

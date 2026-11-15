@@ -4,6 +4,7 @@ package FICHE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.DataInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -12,35 +13,36 @@ import java.io.IOException;
  */
 public class NewMain {
     public static void main(String[] args) {
-        FileInputStream archivo = null;
-        DataInputStream entrada = null;
+        DataInputStream entrada;
         Empleado trabajador;
-        
+
+        entrada = null;
+
         try {
-            archivo = new FileInputStream("Ficheros" + File.separator + "FICHE.DAT");
-            entrada = new DataInputStream(archivo);
-            
-            System.out.println ("=== TRABAJADORES ===");
-            
-            while (entrada.available() > 0) {
+            entrada = new DataInputStream(new FileInputStream(new File("Ficheros", "FICHE.DAT")));
+
+            System.out.println("=== TRABAJADORES ===");
+
+            trabajador = FicheDAO.leer(entrada);
+            while (trabajador != null) {
+                System.out.println("Nombre: " + trabajador.getNomApes());
+                System.out.println("Sexo: " + trabajador.getSexo().getDescripcion());
+                System.out.println("Salario: " + trabajador.getSalario());
+                System.out.println("Fecha: " + trabajador.getFechaIngreso());
+                System.out.println("Tipo: " + trabajador.getTipoEmpleado().getDescripcion());
+                System.out.println("Provincia: " + trabajador.getProvincia().getDescripcion());
+                System.out.println("---------------------------------");
                 trabajador = FicheDAO.leer(entrada);
-                
-                System.out.println ("Nombre: " + trabajador.getNomApe());
-                System.out.println ("Sexo: " + trabajador.getSexo());
-                System.out.println ("Salario: " + trabajador.getSalario());
-                System.out.println ("Fecha: " + trabajador.getDiaIngreso() + "/" + trabajador.getMesIngreso() + "/" + trabajador.getAnyoIngreso());
-                System.out.println ("Tipo: " + trabajador.getTipoEmpleado());
-                System.out.println ("Provincia: " + trabajador.getProvincia());
-                System.out.println ("---------------------------------");
             }
-        } catch (IOException ioe) {
-            System.err.println ("Error E/S");
+        } catch (FileNotFoundException fnf) {
+            System.out.println("No se encuentra el fichero");
         } finally {
             try {
-                if (entrada != null) entrada.close();
-                if (archivo != null) archivo.close();
+                if (entrada != null) {
+                    entrada.close();
+                }
             } catch (IOException ioe) {
-                System.err.println ("Error al cerrar");
+                System.out.println("Error E/S al cerrar");
             }
         }
     }

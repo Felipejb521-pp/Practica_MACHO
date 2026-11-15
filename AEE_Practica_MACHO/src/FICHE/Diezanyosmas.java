@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.GregorianCalendar;
 
 /**
  *
@@ -15,65 +14,57 @@ import java.util.GregorianCalendar;
 public class Diezanyosmas {
 
     public static void main(String[] args) {
-        FileInputStream archivo = null;
-        DataInputStream entrada = null;
-        BufferedReader lector = null;
+        DataInputStream entrada;
+        BufferedReader lector;
         Empleado trabajador;
-        GregorianCalendar hoy;
-        int anyoActual, anyosTrabajados, contador10, total, contadorPagina;
-        boolean finFichero;
-        String linea;
+        int total, contador10, contadorPagina;
+        float porcentaje;
 
-        contador10 = 0;
+        entrada = null;
+        lector = new BufferedReader(new InputStreamReader(System.in));
         total = 0;
+        contador10 = 0;
         contadorPagina = 0;
-        finFichero = false;
 
         try {
-            archivo = new FileInputStream("Ficheros" + File.separator + "FICHE.DAT");
-            entrada = new DataInputStream(archivo);
-            lector = new BufferedReader(new InputStreamReader(System.in));
-
-            hoy = new GregorianCalendar();
-            anyoActual = hoy.get(GregorianCalendar.YEAR);
+            entrada = new DataInputStream(new FileInputStream(new File("Ficheros", "FICHE.DAT")));
 
             System.out.println("Con 10 años o más");
 
-            while (!finFichero) {
-                trabajador = FicheDAO.leer(entrada);
+            trabajador = FicheDAO.leer(entrada);
+            while (trabajador != null) {
+                total++;
 
-                if (trabajador.getNomApe() == null) {
-                    finFichero = true;
-                } else {
-                    total++;
-                    anyosTrabajados = anyoActual - trabajador.getAnyoIngreso();
+                if (trabajador.getFechaIngreso().getAntiguedad() >= 10) {
+                    System.out.println(trabajador.getNomApes() + " - "
+                            + trabajador.getFechaIngreso().getAntiguedad() + " años");
+                    contador10++;
+                    contadorPagina++;
 
-                    if (anyosTrabajados >= 10) {
-                        System.out.println(trabajador.getNomApe() + " - " + anyosTrabajados + " años");
-                        contador10++;
-                        contadorPagina++;
-
-                        if (contadorPagina == 10) {
-                            System.out.println("Pulse intro para continuar...");
-                            linea = lector.readLine();
-                            contadorPagina = 0;
-                        }
+                    if (contadorPagina == 10) {
+                        System.out.println("Pulse intro para continuar...");
+                        lector.readLine();
+                        contadorPagina = 0;
                     }
                 }
+                trabajador = FicheDAO.leer(entrada);
             }
 
             if (total > 0) {
-                System.out.println("Porcentaje: " + (contador10 * 100 / total) + "%");
+                porcentaje = (float) contador10 * 100 / total;
+                System.out.println("Porcentaje: " + String.format("%.2f", porcentaje) + "%");
+            } else {
+                System.out.println("El fichero no tiene trabajadores");
             }
         } catch (IOException ioe) {
-            System.err.println("Error E/S");
+            System.out.println("Error E/S");
         } finally {
             try {
-                if (entrada != null) entrada.close();
-                if (archivo != null) archivo.close();
-                if (lector != null) lector.close();
+                if (entrada != null) {
+                    entrada.close();
+                }
             } catch (IOException ioe) {
-                System.err.println("Error al cerrar");
+                System.out.println("Error E/S al cerrar");
             }
         }
     }

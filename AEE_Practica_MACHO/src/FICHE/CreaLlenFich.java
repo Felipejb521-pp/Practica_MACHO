@@ -7,252 +7,230 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.GregorianCalendar;
 
 /**
  *
  * @author Felipe Jimenez
  */
 public class CreaLlenFich {
-    
-    public static void error(){
+
+    public static void error() {
         System.out.println("Formato incorrecto , Introduzca de nuevo :");
     }
-    
+
+    public static String leerNombre(BufferedReader teclado) {
+        String nomApe;
+        boolean valido;
+
+        do {
+            try {
+                nomApe = teclado.readLine().trim().toUpperCase();
+            } catch (IOException ioe) {
+                System.out.println("Error E/S");
+                nomApe = "";
+            }
+            valido = nomApe.matches("[A-ZÁÉÍÓÚÑ ]+") && nomApe.contains(" ")
+                    && nomApe.length() <= 30;
+            if (!valido) {
+                System.out.println("Debe anyadir al menos 1 apellido");
+                error();
+            }
+        } while (!valido);
+
+        return nomApe;
+    }
+
+    public static Sexo leerSexo(BufferedReader teclado) {
+        String linea;
+        Sexo sexo;
+        boolean valido;
+
+        sexo = null;
+        do {
+            try {
+                linea = teclado.readLine().trim().toUpperCase();
+            } catch (IOException ioe) {
+                System.out.println("Error E/S");
+                linea = "";
+            }
+            valido = linea.equals("H") || linea.equals("M");
+            if (valido) {
+                sexo = Sexo.buscador(linea.charAt(0));
+            } else {
+                error();
+            }
+        } while (!valido);
+
+        return sexo;
+    }
+
+    public static float leerSalario(BufferedReader teclado) {
+        float salario;
+        boolean valido;
+
+        salario = 0;
+        do {
+            try {
+                salario = Float.parseFloat(teclado.readLine().trim());
+                valido = salario >= 0 && salario <= 9999.99f;
+            } catch (NumberFormatException nfe) {
+                valido = false;
+            } catch (IOException ioe) {
+                System.out.println("Error E/S");
+                valido = false;
+            }
+            if (!valido) {
+                error();
+            }
+        } while (!valido);
+
+        return salario;
+    }
+
+    public static Fecha leerFecha(BufferedReader teclado) {
+        Fecha fecha;
+        String[] partes;
+        byte dia, mes;
+        short anyo;
+        boolean valido;
+
+        fecha = null;
+        do {
+            valido = false;
+            try {
+                partes = teclado.readLine().split("/");
+                if (partes.length == 3) {
+                    // parseByte y parseShort fallan si el numero no cabe: no hay truncado
+                    dia = Byte.parseByte(partes[0].trim());
+                    mes = Byte.parseByte(partes[1].trim());
+                    anyo = Short.parseShort(partes[2].trim());
+
+                    if (Fecha.fechaCorrecta(dia, mes, anyo)) {
+                        fecha = new Fecha(dia, mes, anyo);
+                        valido = fecha.esAnteriorHoy();
+                    }
+                }
+            } catch (NumberFormatException nfe) {
+                valido = false;
+            } catch (IOException ioe) {
+                System.out.println("Error E/S");
+                valido = false;
+            }
+            if (!valido) {
+                error();
+            }
+        } while (!valido);
+
+        return fecha;
+    }
+
+    public static TipoEmpleado leerTipo(BufferedReader teclado) {
+        String linea;
+        TipoEmpleado tipo;
+        boolean valido;
+
+        tipo = null;
+        do {
+            try {
+                linea = teclado.readLine().trim().toUpperCase();
+            } catch (IOException ioe) {
+                System.out.println("Error E/S");
+                linea = "";
+            }
+            valido = linea.equals("C") || linea.equals("F") || linea.equals("D");
+            if (valido) {
+                tipo = TipoEmpleado.buscador(linea.charAt(0));
+            } else {
+                error();
+            }
+        } while (!valido);
+
+        return tipo;
+    }
+
+    public static Provincia leerProvincia(BufferedReader teclado) {
+        Provincia provincia;
+
+        provincia = null;
+        do {
+            try {
+                provincia = Provincia.buscador(Byte.parseByte(teclado.readLine().trim()));
+            } catch (NumberFormatException nfe) {
+                provincia = null;
+            } catch (IOException ioe) {
+                System.out.println("Error E/S");
+                provincia = null;
+            }
+            if (provincia == null) {
+                error();
+            }
+        } while (provincia == null);
+
+        return provincia;
+    }
+
     public static void main(String[] args) {
         DataOutputStream dos;
         BufferedReader teclado;
         File accesoCarpeta;
-        boolean valido;
         String nomApe;
-        char sexo,continuar;
+        Sexo sexo;
         float salario;
-        short anyoIngreso;
-        byte mesIngreso,diaIngreso;
+        Fecha fechaIngreso;
         TipoEmpleado tipoEmpleado;
         Provincia provincia;
-        Empleado trabajador;
-        GregorianCalendar hoy;
-        
-        
+        Empleado empleado;
+        char continuar;
+
         dos = null;
         teclado = new BufferedReader(new InputStreamReader(System.in));
         accesoCarpeta = new File("Ficheros");
-        hoy = new GregorianCalendar();
-        continuar = 'N';
-        
-        
-        
-        if(!accesoCarpeta.exists()){
+
+        if (!accesoCarpeta.exists()) {
             accesoCarpeta.mkdirs();
         }
-        try{
-            //true (append) permite repetidos
-            dos = new DataOutputStream( new FileOutputStream("Ficheros\\FICHE.DAT", true));
-        }catch(FileNotFoundException fnf){
+        try {
+            // sin true: cada ejecucion crea el fichero de nuevo
+            dos = new DataOutputStream(new FileOutputStream(new File(accesoCarpeta, "FICHE.DAT")));
+        } catch (FileNotFoundException fnf) {
             System.out.println("Fichero no encontrado");
         }
-        
-        if(dos != null){
-            do{
-                trabajador = new Empleado();
-                nomApe = "";
-                sexo = 'H';
-                salario = 0;
-                anyoIngreso = 0;
-                mesIngreso = 0;
-                diaIngreso = 0;
-                tipoEmpleado = null;
-                provincia = null;
-                
-                System.out.println("Nombre y Apellidos :");
-                try{
-                    do{
-                        valido = true;
-                        nomApe = teclado.readLine().toUpperCase();
-                        
-                        if(!nomApe.matches("[A-Za-zÁÉÍÓÚáéíóúÑñ ]+")){
-                            valido = false;
-                            error();
-                        }
-                    }while(!valido);
-                    trabajador.setNomApe(nomApe);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                }
-                
-                System.out.println("Sexo :");
-                try{
-                    do{
-                        valido = true;
-                        try{
-                            sexo = teclado.readLine().charAt(0);
-                            
-                            if(sexo != 'H' && sexo != 'M'){
-                                valido = false;
-                            }
-                        }catch(StringIndexOutOfBoundsException sioobe){
-                            valido = false;
-                        }
-                        if(!valido){
-                            error();
-                        }
-                    }while(!valido);
-                    trabajador.setSexo(sexo);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                }
-                
+
+        if (dos != null) {
+            do {
+                System.out.println("Nombre Apellidos :");
+                nomApe = leerNombre(teclado);
+                System.out.println("Sexo(H/M) :");
+                sexo = leerSexo(teclado);
                 System.out.println("Salario :");
-                try{
-                    do{
-                        valido = true;
-                        try{
-                            salario = Float.parseFloat(teclado.readLine());
-                            
-                            if(salario < 0 || salario > 9999.99f){
-                                valido = false;
-                            }
-                        }catch(NumberFormatException nfe){
-                            valido = false;
-                        }
-                        if(!valido){
-                            error();
-                        }
-                    }while(!valido);
-                    trabajador.setSalario(salario);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                }
-                
-                System.out.println("Anyo Ingreso :");
-                try{
-                    do{
-                        valido = true;
-                        try{
-                            anyoIngreso = Short.parseShort(teclado.readLine());
-
-                            if(anyoIngreso>hoy.get(GregorianCalendar.YEAR)){
-                                valido = false;
-                            }
-                        }catch(NumberFormatException nfe){
-                            valido = false;
-                        }
-                        if(!valido){
-                            error();
-                        }
-                     }while(!valido);
-                        trabajador.setAnyoIngreso(anyoIngreso);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                }
-                
-                System.out.println("Mes Ingreso :");
-                try{
-                    do{ 
-                        valido = true;
-                        try{    
-                            mesIngreso = Byte.parseByte(teclado.readLine());
-
-                            if(mesIngreso < 1 || mesIngreso > 12 || (anyoIngreso == hoy.get(GregorianCalendar.YEAR) && mesIngreso > hoy.get(GregorianCalendar.MONTH) + 1)){
-                                 valido = false;
-                            }
-                        }catch(NumberFormatException nfe){
-                            valido = false;
-                        } 
-                        if(!valido){
-                            error();
-                        }
-                    }while(!valido);
-                        trabajador.setMesIngreso(mesIngreso);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                }
-                
-                
-                System.out.println("Dia Ingreso :");
-                try{
-                    do{
-                        valido = true;
-                        try{
-                            diaIngreso = Byte.parseByte(teclado.readLine());
-
-                            if(diaIngreso < 1 || diaIngreso > new GregorianCalendar(trabajador.getAnyoIngreso(), trabajador.getMesIngreso() - 1, 1).getActualMaximum(GregorianCalendar.DAY_OF_MONTH)
-                                || (anyoIngreso == hoy.get(GregorianCalendar.YEAR) && mesIngreso == hoy.get(GregorianCalendar.MONTH) + 1 && diaIngreso > hoy.get(GregorianCalendar.DAY_OF_MONTH))){
-                                 valido = false;
-                            }
-                        }catch(NumberFormatException nfe){
-                            valido = false;
-                        }
-                        if(!valido){
-                            error();
-                        }
-                    }while(!valido);
-                    trabajador.setDiaIngreso(diaIngreso);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                }
-                
-                System.out.println("Tipo Empleado : A comision , A domicilio , Fijos");
-                try{
-                    do{
-                        valido = true;
-                        try{
-                            //Formato del enum ACOMISION,ADOMICILIO,FIJOS
-                            tipoEmpleado= TipoEmpleado.valueOf(
-                                    teclado.readLine().trim().toUpperCase().replace(" ",""));
-                        }catch(IllegalArgumentException iae){
-                            valido = false;
-                        }
-                        if(!valido){
-                            error();
-                        }
-                    }while(!valido);
-                    trabajador.setTipoEmpleado(tipoEmpleado);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                } 
-                
-                System.out.println("Provincia(Andalucia) :");
-                try{
-                    do{
-                        valido = true;
-                        try{
-                            //Formato del enum ALMERIA,CADIZ,CORDOBA,GRANADA,HUELVA,JAEN,MALAGA,SEVILLA
-                            provincia = Provincia.valueOf(teclado.readLine().trim().toUpperCase().replace(" ",""));
-                        }catch(IllegalArgumentException iae){
-                            valido = false;
-                        }
-                        if(!valido){
-                            error();
-                        }
-                    }while(!valido);
-                    trabajador.setProvincia(provincia);
-                }catch(IOException ioe){
-                    System.out.println("Error E/S");
-                } 
-                
-                FicheDAO.escribir(dos, trabajador);
-                
+                salario = leerSalario(teclado);
+                System.out.println("Fecha de ingreso (dd/mm/AAAA) :");
+                fechaIngreso = leerFecha(teclado);
+                System.out.println("Tipo Empleado : C (A comision), F (Fijos), D (A domicilio)");
+                tipoEmpleado = leerTipo(teclado);
+                System.out.println("Provincia : 1 Almeria, 2 Cadiz, 3 Cordoba, 4 Granada,"
+                        + " 5 Huelva, 6 Jaen, 7 Malaga, 8 Sevilla");
+                provincia = leerProvincia(teclado);
+                empleado = new Empleado(nomApe, sexo, salario, fechaIngreso, tipoEmpleado, provincia);
+                FicheDAO.escribir(dos, empleado);
                 System.out.println("¿Añadir otro trabajador? (S/N) :");
-                try{
+                try {
                     continuar = teclado.readLine().charAt(0);
-                }catch(StringIndexOutOfBoundsException sioobe){
+                } catch (StringIndexOutOfBoundsException sioobe) {
                     continuar = 'N';
-                }catch(IOException ioe){
+                } catch (IOException ioe) {
                     System.out.println("Error E/S");
                     continuar = 'N';
                 }
-            }while(continuar == 'S' || continuar == 's');
-            
-            try{
+            } while (continuar == 'S' || continuar == 's');
+
+            try {
                 dos.close();
-            }catch(IOException ioe){
+            } catch (IOException ioe) {
                 System.out.println("Error E/S al cerrar");
             }
-        }else{
+        } else {
             System.out.println("No se pudo guardar el trabajador");
         }
-        
     }
 }
